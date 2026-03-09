@@ -1,0 +1,50 @@
+services:
+  # Django backend service
+  - type: web
+    name: drf-crud-api
+    runtime: python3
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi"
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: drf-crud-db
+          property: connectionString
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: grocery-bud-frontend
+          property: host
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: grocery-bud-frontend
+          property: host
+      - key: CSRF_TRUSTED_ORIGINS
+        fromService:
+          type: web
+          name: grocery-bud-frontend
+          property: host
+
+  # React frontend service
+  - type: web
+    name: grocery-bud-frontend
+    runtime: static
+    buildCommand: "npm run build"
+    staticPublishPath: "./dist"
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: drf-crud-api
+          property: host
+
+# PostgreSQL database
+databases:
+  - name: drf-crud-db
+    databaseName: drf_crud
+    user: drf_crud_user

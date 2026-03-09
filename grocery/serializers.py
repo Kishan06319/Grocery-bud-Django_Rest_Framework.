@@ -1,14 +1,13 @@
+# serializers.py
 from rest_framework import serializers
 from .models import GroceryItem
+
 
 class GroceryItemSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(
         max_length=200,
-        error_messages={
-            'required': 'Name is required',
-            'blank': 'Name cannot be blank'
-        }
+        error_messages={'required': 'Name is required', 'blank': 'Name is required'}
     )
     completed = serializers.BooleanField(default=False, required=False)
     created_at = serializers.DateTimeField(read_only=True)
