@@ -17,6 +17,27 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'config.urls': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -37,14 +58,20 @@ ALLOWED_HOSTS = [
 # Add Render domain if available
 render_url = os.environ.get('RENDER_EXTERNAL_URL')
 if render_url:
-    from urllib.parse import urlparse
-    domain = urlparse(render_url).netloc
-    ALLOWED_HOSTS.append(domain)
+    try:
+        from urllib.parse import urlparse
+        domain = urlparse(render_url).netloc
+        ALLOWED_HOSTS.append(domain)
+        print(f"Added Render domain to ALLOWED_HOSTS: {domain}")
+    except Exception as e:
+        print(f"Error parsing RENDER_EXTERNAL_URL: {e}")
 
 # Add any additional hosts from environment
 additional_hosts = os.environ.get('ALLOWED_HOSTS', '')
 if additional_hosts:
     ALLOWED_HOSTS.extend(additional_hosts.split(','))
+
+print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 
 # Application definition
