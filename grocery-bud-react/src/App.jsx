@@ -1,14 +1,12 @@
 import Items from "./components/Items";
-// import { groceryItems } from "./data/groceryItems";
-import { useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Form from "./components/Form";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import { nanoid } from "nanoid";
+import Form from "./components/Form";
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/grocery"
-).replace(/\/$/, "");
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const App = () => {
   const [items, setItems] = useState([]);
@@ -16,9 +14,15 @@ const App = () => {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    if (editId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editId]);
+
+  useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/`);
+        const res = await fetch(`${BASE_URL}/`);
         if (!res.ok) throw new Error("Failed to fetch items");
         const data = await res.json();
         setItems(data);
@@ -29,9 +33,25 @@ const App = () => {
     fetchItems();
   }, []);
 
+  const addItem = async (itemName) => {
+    try {
+      const res = await fetch(`${BASE_URL}/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: itemName, completed: false }),
+      });
+      if (!res.ok) throw new Error();
+      const newItem = await res.json();
+      setItems((prev) => [...prev, newItem.data]);
+      toast.success("Grocery item added");
+    } catch {
+      toast.error("Could not add item");
+    }
+  };
+
   const editCompleted = async (itemId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${itemId}/toggle/`, {
+      const res = await fetch(`${BASE_URL}/${itemId}/toggle/`, {
         method: "POST",
       });
       if (!res.ok) throw new Error();
@@ -46,9 +66,7 @@ const App = () => {
 
   const removeItem = async (itemId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${itemId}/`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`${BASE_URL}/${itemId}/`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setItems((prev) => prev.filter((item) => item.id !== itemId));
       toast.success("Item deleted");
@@ -57,25 +75,9 @@ const App = () => {
     }
   };
 
-  const addItem = async (itemName) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: itemName, completed: false }),
-      });
-      if (!res.ok) throw new Error();
-      const newItem = await res.json();
-      setItems((prev) => [...prev, newItem.data]);
-      toast.success("Grocery item added");
-    } catch {
-      toast.error("Could not add item");
-    }
-  };
-
   const updateItemName = async (newName) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${editId}/`, {
+      const res = await fetch(`${BASE_URL}/${editId}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName }),
