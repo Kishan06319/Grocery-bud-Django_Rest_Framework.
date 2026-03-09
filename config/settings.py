@@ -177,9 +177,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/static/'
+# React app is built with assets at /assets, so serve from there
+STATIC_URL = '/assets/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'grocery-bud-react' / 'dist' / 'assets']
+
+# Add dist/assets directory for static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'grocery-bud-react' / 'dist' / 'assets',
+]
+
+# Use WhiteNoise for serving static files in production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
