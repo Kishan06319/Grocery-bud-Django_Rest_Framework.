@@ -22,12 +22,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-rn5j^_+%&&$)^hh7r)%0vf4t=d+n$51m7srhre))%3^8%%@&d-')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ["*"]  # Allow all hosts for development, change in production
+# ALLOWED_HOSTS for production - Render provides RENDER_EXTERNAL_URL
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+]
+
+# Add Render domain if available
+render_url = os.environ.get('RENDER_EXTERNAL_URL')
+if render_url:
+    from urllib.parse import urlparse
+    domain = urlparse(render_url).netloc
+    ALLOWED_HOSTS.append(domain)
+
+# Add any additional hosts from environment
+additional_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if additional_hosts:
+    ALLOWED_HOSTS.extend(additional_hosts.split(','))
 
 
 # Application definition
@@ -88,6 +105,15 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+
+# Ensure database is properly configured
+if not DATABASES['default'].get('ENGINE'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

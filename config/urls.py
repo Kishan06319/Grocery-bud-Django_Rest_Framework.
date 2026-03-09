@@ -4,8 +4,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse, HttpResponse
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def api_home(request):
+    logger.info("API home endpoint called")
     return JsonResponse({
         "status": "success",
         "message": "Django Backend API is running perfectly!"
@@ -13,13 +17,16 @@ def api_home(request):
 
 def serve_react(request):
     """Serve React index.html for SPA routing"""
+    logger.info(f"Serving React app for path: {request.path}")
     dist_dir = os.path.join(settings.BASE_DIR, 'grocery-bud-react', 'dist')
     index_file = os.path.join(dist_dir, 'index.html')
     
     if os.path.exists(index_file):
+        logger.info(f"Found index.html at: {index_file}")
         with open(index_file, 'r', encoding='utf-8') as f:
             return HttpResponse(f.read(), content_type='text/html')
     
+    logger.error(f"Frontend not found at {dist_dir}")
     return HttpResponse(
         "<h1>Error: Frontend not built</h1><p>Run: npm run build in grocery-bud-react/</p>",
         content_type='text/html',
