@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import JsonResponse, FileResponse
-from django.views.generic import TemplateView
+from django.http import JsonResponse
+from django.views.static import serve as serve_static
 import os
 
 # This creates a simple message when you visit the root URL so you know it works
@@ -15,11 +15,13 @@ def api_home(request):
 
 def serve_react(request):
     """Serve the React app's index.html file"""
-    index_path = os.path.join(settings.BASE_DIR, 'grocery-bud-react', 'dist', 'index.html')
-    try:
-        return FileResponse(open(index_path, 'rb'), content_type='text/html')
-    except FileNotFoundError:
-        return JsonResponse({"error": "Frontend not found"}, status=404)
+    dist_path = os.path.join(settings.BASE_DIR, 'grocery-bud-react', 'dist')
+    index_path = os.path.join(dist_path, 'index.html')
+    
+    if os.path.exists(index_path):
+        return serve_static(request, 'index.html', document_root=dist_path)
+    else:
+        return JsonResponse({"error": f"Frontend not found at {dist_path}"}, status=404)
 
 urlpatterns = [
     # Admin Panel
